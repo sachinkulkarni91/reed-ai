@@ -635,10 +635,11 @@ class MeetingBot:
             try:
                 clicked = await frame.evaluate(
                     """(needle) => {
-                        const all = document.querySelectorAll('button, [role=button], a, div, span');
-                        for (const el of all) {
-                            const t = (el.innerText || '').trim().toLowerCase();
-                            if (t && t.length < 80 && t.includes(needle)) { el.click(); return t; }
+                        for (const sel of ['button, [role=button], a', 'div, span']) {
+                            for (const el of document.querySelectorAll(sel)) {
+                                const t = (el.innerText || '').trim().toLowerCase();
+                                if (t && t.length < 80 && t.includes(needle)) { el.click(); return t; }
+                            }
                         }
                         return null;
                     }""",
@@ -663,12 +664,21 @@ class MeetingBot:
         for _ in range(deadline):
             for frame in page.frames:
                 try:
+                    btn = frame.get_by_role("button", name=re.compile(re.escape(label), re.I)).first
+                    if await btn.count():
+                        await btn.click(timeout=3_000)
+                        log.info("confirmed joining without audio/video (real click)")
+                        return
+                except Exception:
+                    pass
+                try:
                     clicked = await frame.evaluate(
                         """(needle) => {
-                            const all = document.querySelectorAll('button, [role=button], a, div, span');
-                            for (const el of all) {
-                                const t = (el.innerText || '').trim().toLowerCase();
-                                if (t && t.length < 80 && t.includes(needle)) { el.click(); return t; }
+                            for (const sel of ['button, [role=button], a', 'div, span']) {
+                                for (const el of document.querySelectorAll(sel)) {
+                                    const t = (el.innerText || '').trim().toLowerCase();
+                                    if (t && t.length < 80 && t.includes(needle)) { el.click(); return t; }
+                                }
                             }
                             return null;
                         }""",
