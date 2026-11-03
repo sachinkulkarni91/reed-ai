@@ -4,30 +4,25 @@
 # (same origin, so no CORS or frontend URL config is needed).
 #
 # Notes:
-# - FREE PLAN (512 MB RAM, no persistent disk, spins down after ~15 min
-#   idle). Consequences:
-#     * The live meeting bot will NOT work (headless Chromium needs more
-#       RAM than the free instance has). Transcript import, recording
-#       uploads via Sarvam, chat, action items and Trello all work.
-#     * All data (SQLite DB + media) is EPHEMERAL: wiped on every deploy,
-#       restart or spin-down. To keep data, upgrade to a paid plan and
-#       re-add the disk block below.
+# - "standard" (2 GB RAM) is the minimum that can run the live meeting
+#   bot (headless Chromium). The disk keeps the SQLite DB and meeting
+#   media across deploys and restarts.
 # - TRANSCRIPTION_PROVIDER must be "sarvam" in this image: recording
 #   uploads under any other provider fall back to local Whisper, which is
 #   deliberately not installed (see backend/requirements.deploy.txt).
-#
-# Paid setup: set "plan: standard" (2 GB RAM, runs the bot) and re-add:
-#     disk:
-#       name: reed-data
-#       mountPath: /app/data
-#       sizeGB: 5
+# - Free setup (demo only): "plan: free" and remove the disk block; the
+#   bot then cannot run and data is wiped on every restart.
 services:
   - type: web
     name: reed-ai
     runtime: docker
-    plan: free
+    plan: standard
     dockerfilePath: ./Dockerfile
     healthCheckPath: /api/health
+    disk:
+      name: reed-data
+      mountPath: /app/data
+      sizeGB: 5
     envVars:
       # --- Claude ---
       - key: ANTHROPIC_API_KEY
