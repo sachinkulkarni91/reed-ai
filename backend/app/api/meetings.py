@@ -117,6 +117,27 @@ def get_meeting(meeting_id: int, session: Session = Depends(get_session)):
     }
 
 
+@router.get("/{meeting_id}/diagnostics", response_class=PlainTextResponse)
+def join_diagnostics(meeting_id: int):
+    """The page text the bot saved when a join failed - essential on a server,
+    where there is no browser window to look at. Append .png for the screenshot."""
+    base = settings.media_path / f"meeting-{meeting_id}-join_failed"
+    txt = base.with_suffix(".txt")
+    if not txt.exists():
+        raise HTTPException(404, "No join diagnostics for this meeting")
+    return txt.read_text(encoding="utf-8")
+
+
+@router.get("/{meeting_id}/diagnostics.png")
+def join_diagnostics_png(meeting_id: int):
+    from fastapi.responses import FileResponse
+
+    png = settings.media_path / f"meeting-{meeting_id}-join_failed.png"
+    if not png.exists():
+        raise HTTPException(404, "No join screenshot for this meeting")
+    return FileResponse(png, media_type="image/png")
+
+
 def _delete_meeting_files(meeting_id: int) -> int:
     """Remove every artifact this meeting left in the media directory:
     the recording (bot .webm or uploaded video/audio), the derived .wav,
