@@ -548,7 +548,22 @@ class MeetingBot:
                 await join.wait_for(state="visible", timeout=10_000)
             except PlaywrightTimeoutError:
                 return BotResult(False, "Could not find the Teams join button")
-        await join.click()
+        # The "no audio/video?" dialog can drop its backdrop over the Join
+        # button at the exact moment of clicking (meeting 10: 30s of click
+        # retries, every one intercepted by fui-DialogSurface__backdrop).
+        # Alternate dismiss+click, then fall back to a direct JS click, which
+        # no backdrop can intercept.
+        try:
+            await join.click(timeout=5_000)
+        except Exception:
+            await self._confirm_no_media(page, label="Continue without audio")
+            try:
+                await join.click(timeout=5_000)
+            except Exception:
+                try:
+                    await join.evaluate("el => el.click()")
+                except Exception:
+                    return BotResult(False, "Could not click the Teams join button (a dialog kept covering it)")
 
         await self._confirm_no_media(page, label="Continue without audio")
 
