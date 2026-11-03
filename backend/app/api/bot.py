@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlmodel import Session, select
@@ -20,8 +22,10 @@ class JoinRequest(BaseModel):
 
 
 def _ingest_url(request: Request, meeting_id: int) -> str:
-    scheme = "wss" if request.url.scheme == "https" else "ws"
-    return f"{scheme}://{request.url.netloc}/ws/ingest/{meeting_id}"
+    # The bot lives in this process, so talk to ourselves directly instead of
+    # via the public URL (behind a proxy the scheme/host seen here is the edge's).
+    port = (request.scope.get("server") or (None, None))[1] or os.environ.get("PORT", "8000")
+    return f"ws://127.0.0.1:{port}/ws/ingest/{meeting_id}"
 
 
 @router.post("/join", status_code=202)
