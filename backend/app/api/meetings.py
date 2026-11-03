@@ -119,6 +119,7 @@ def get_meeting(meeting_id: int, session: Session = Depends(get_session)):
 
 @router.get("/{meeting_id}/audio")
 def meeting_audio(meeting_id: int, session: Session = Depends(get_session)):
+    import os
     from fastapi.responses import FileResponse
 
     meeting = session.get(Meeting, meeting_id)
