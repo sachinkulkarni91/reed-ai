@@ -164,6 +164,19 @@ class MeetingBot:
                     reason = joined.reason
                     if dump_path:
                         reason = f"{reason} (diagnostics saved: {dump_path})"
+                    try:
+                        seen = await page.evaluate(
+                            """() => {
+                              const vis = e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+                              const d = [...document.querySelectorAll('[role=dialog],[role=alertdialog],[aria-modal=true],[class*=DialogSurface],[id*=cookie i],[class*=cookie i],[class*=consent i]')]
+                                .filter(vis).map(e => (e.getAttribute('role')||e.className||e.id||'').toString().slice(0,50) + ': ' + (e.innerText||'').replace(/\\s+/g,' ').slice(0,200));
+                              const b = [...document.querySelectorAll('button')].filter(vis).map(e => (e.innerText||e.ariaLabel||'').trim().slice(0,30)).filter(Boolean).slice(0,15);
+                              return 'DIALOGS=' + JSON.stringify(d.slice(0,4)) + ' BUTTONS=' + JSON.stringify(b) + ' URL=' + location.href.slice(0,120);
+                            }"""
+                        )
+                        reason = f"{reason} [{seen}]"
+                    except Exception:
+                        pass
                     return BotResult(False, reason)
 
                 await page.evaluate(CAPTURE_JS)
