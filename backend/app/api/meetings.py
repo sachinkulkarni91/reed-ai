@@ -117,6 +117,16 @@ def get_meeting(meeting_id: int, session: Session = Depends(get_session)):
     }
 
 
+@router.get("/{meeting_id}/audio")
+def meeting_audio(meeting_id: int, session: Session = Depends(get_session)):
+    from fastapi.responses import FileResponse
+
+    meeting = session.get(Meeting, meeting_id)
+    if not meeting or not meeting.audio_path or not os.path.exists(meeting.audio_path):
+        raise HTTPException(404, "No recording for this meeting")
+    return FileResponse(meeting.audio_path)
+
+
 @router.get("/{meeting_id}/diagnostics", response_class=PlainTextResponse)
 def join_diagnostics(meeting_id: int):
     """The page text the bot saved when a join failed - essential on a server,
