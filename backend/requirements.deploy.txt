@@ -14,3 +14,5 @@ anthropic>=0.45.0
 playwright==1.49.1
 python-dotenv==1.0.1
 aiofiles==24.1.0
+av>=12.0.0
+numpy>=1.26,<3
