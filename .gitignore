@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Local data (SQLite DB, meeting media)
+backend/data/
+
+# Secrets
+.env
+backend/.env
+
+# Node
+node_modules/
+frontend/dist/
+
+# Editor / OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,79 @@
+# Render blueprint for Reed AI.
+#
+# One Docker web service serves both the API and the built frontend
+# (same origin, so no CORS or frontend URL config is needed).
+#
+# Notes:
+# - FREE PLAN (512 MB RAM, no persistent disk, spins down after ~15 min
+#   idle). Consequences:
+#     * The live meeting bot will NOT work (headless Chromium needs more
+#       RAM than the free instance has). Transcript import, recording
+#       uploads via Sarvam, chat, action items and Trello all work.
+#     * All data (SQLite DB + media) is EPHEMERAL: wiped on every deploy,
+#       restart or spin-down. To keep data, upgrade to a paid plan and
+#       re-add the disk block below.
+# - TRANSCRIPTION_PROVIDER must be "sarvam" in this image: recording
+#   uploads under any other provider fall back to local Whisper, which is
+#   deliberately not installed (see backend/requirements.deploy.txt).
+#
+# Paid setup: set "plan: standard" (2 GB RAM, runs the bot) and re-add:
+#     disk:
+#       name: reed-data
+#       mountPath: /app/data
+#       sizeGB: 5
+services:
+  - type: web
+    name: reed-ai
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      # --- Claude ---
+      - key: ANTHROPIC_API_KEY
+        sync: false # entered in the Render dashboard, never committed
+      - key: REED_MODEL
+        value: claude-opus-4-8
+      - key: REED_EFFORT
+        value: high
+
+      # --- Transcription (Sarvam does both live and upload transcription
+      # in this image; whisper/deepgram settings kept for completeness) ---
+      - key: TRANSCRIPTION_PROVIDER
+        value: sarvam
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: SARVAM_MODEL
+        value: saaras:v3
+      - key: SARVAM_MODE
+        value: codemix
+      - key: SARVAM_LANGUAGE
+        value: unknown
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: DEEPGRAM_MODEL
+        value: nova-3
+
+      # --- Bot (won't run on the free plan - needs a paid instance) ---
+      - key: BOT_DISPLAY_NAME
+        value: Reed AI Notetaker
+      - key: BOT_HEADLESS
+        value: "true" # must stay true on a server (no display)
+      - key: BOT_MAX_MEETING_MINUTES
+        value: "180"
+
+      # --- Trello (off; fill the three keys to enable) ---
+      - key: TRELLO_AUTO_PUSH
+        value: "false"
+      # To enable Trello, add TRELLO_API_KEY, TRELLO_TOKEN and
+      # TRELLO_LIST_ID in the service's Environment tab.
+
+      # --- Server (production paths; do not copy local .env values here) ---
+      - key: DATABASE_URL
+        value: sqlite:////app/data/reed.db
+      - key: MEDIA_DIR
+        value: /app/data/media
+      # Same-origin frontend: no CORS origins needed. Set this only if you
+      # later host the frontend elsewhere.
+      - key: CORS_ORIGINS
+        value: ""

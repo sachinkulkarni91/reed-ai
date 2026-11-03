@@ -1,0 +1,16 @@
+# Production requirements for Render.
+# Local Whisper + pyannote are intentionally left out: they pull in PyTorch
+# (multi-GB image, heavy CPU) and production uses a cloud transcription
+# provider instead (TRANSCRIPTION_PROVIDER=sarvam or deepgram).
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+sqlmodel==0.0.22
+pydantic==2.10.4
+pydantic-settings==2.7.0
+python-multipart==0.0.20
+httpx==0.28.1
+websockets==14.1
+anthropic>=0.45.0
+playwright==1.49.1
+python-dotenv==1.0.1
+aiofiles==24.1.0

@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/askai.tsx","./src/components/ui.tsx","./src/lib/api.ts","./src/lib/format.ts","./src/pages/actionitems.tsx","./src/pages/ask.tsx","./src/pages/meetingdetail.tsx","./src/pages/meetings.tsx","./src/pages/settings.tsx"],"version":"5.9.3"}
