@@ -323,7 +323,7 @@ def import_transcript(
 ):
     """Accept an existing transcript instead of recording one.
 
-    Understands `[MM:SS] Speaker: text` (Reed AI's own export format), plain
+    Understands `[MM:SS] Speaker: text` (Notely's own export format), plain
     `Speaker: text`, and unlabelled prose.
     """
     segments = parse_transcript(payload.transcript)

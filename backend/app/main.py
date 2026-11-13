@@ -22,7 +22,7 @@ logging.basicConfig(
 async def lifespan(app: FastAPI):
     init_db()
     logging.getLogger(__name__).info(
-        "Reed AI up - model=%s transcription=%s trello=%s",
+        "Notely up - model=%s transcription=%s trello=%s",
         settings.reed_model,
         settings.transcription_provider,
         "on" if settings.trello_api_key else "off",
@@ -42,7 +42,7 @@ async def lifespan(app: FastAPI):
             )
 
 
-app = FastAPI(title="Reed AI", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Notely", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

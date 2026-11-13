@@ -23,7 +23,7 @@ export default function App() {
             R
           </div>
           <div>
-            <div className="text-sm font-semibold text-white">Reed AI</div>
+            <div className="text-sm font-semibold text-white">Notely</div>
             <div className="text-[11px] text-slate-500">Meeting intelligence</div>
           </div>
         </div>

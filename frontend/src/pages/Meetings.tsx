@@ -168,7 +168,7 @@ function JoinForm({ onDone }: { onDone: () => void }) {
           <label className="label">Bot display name</label>
           <input
             className="input"
-            placeholder="Reed AI Notetaker"
+            placeholder="Notely"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />

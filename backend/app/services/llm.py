@@ -24,7 +24,7 @@ from ..config import settings
 log = logging.getLogger(__name__)
 
 BASE_SYSTEM = (
-    "You are Reed AI, a meeting intelligence engine. You read diarized meeting "
+    "You are Notely, a meeting intelligence engine. You read diarized meeting "
     "transcripts and produce precise, sourced, non-speculative output.\n"
     "Rules:\n"
     "- Never invent commitments. An action item exists only if someone actually "

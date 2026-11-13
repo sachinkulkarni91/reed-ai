@@ -1,4 +1,4 @@
-# Reed AI
+# Notely
 
 A meeting intelligence platform: a bot joins your Google Meet / Zoom / Teams call,
 records and transcribes it with speaker diarization, and turns it into a summary,

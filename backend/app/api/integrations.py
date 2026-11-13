@@ -60,7 +60,7 @@ def status():
 
 @router.get("/speakers")
 def list_speakers():
-    """The voice registry: who Reed AI can recognise by voice alone."""
+    """The voice registry: who Notely can recognise by voice alone."""
     from sqlmodel import Session, select
 
     from ..db import engine

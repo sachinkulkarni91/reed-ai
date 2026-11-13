@@ -152,6 +152,6 @@ def build_description(item, meeting) -> str:
         + (f" · owner stated: {item.owner}" if item.owner else "")
         + f"\nConfidence: {item.confidence:.0%}"
         + f"\nMeeting: /meetings/{meeting.id}"
-        + "\n\n_Pushed by Reed AI_"
+        + "\n\n_Pushed by Notely_"
     )
     return "\n\n".join(p for p in parts if p.strip())

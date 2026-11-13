@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     trello_auto_push: bool = False
 
     # Bot
-    bot_display_name: str = "Reed AI Notetaker"
+    bot_display_name: str = "Notely"
     bot_headless: bool = True
     # Signed-in bot identity: a Playwright storage-state file (cookies) made by
     # scripts/bot_login.py, or its JSON pasted into BOT_STORAGE_STATE_JSON on a
