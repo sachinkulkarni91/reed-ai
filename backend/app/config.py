@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     # Bot
     bot_display_name: str = "Reed AI Notetaker"
     bot_headless: bool = True
+    # Signed-in bot identity: a Playwright storage-state file (cookies) made by
+    # scripts/bot_login.py, or its JSON pasted into BOT_STORAGE_STATE_JSON on a
+    # host with no disk access. Unset = join as an anonymous guest.
+    bot_storage_state: str = "data/bot-auth.json"
+    bot_storage_state_json: str = ""
     bot_max_meeting_minutes: int = 180
 
     # Server

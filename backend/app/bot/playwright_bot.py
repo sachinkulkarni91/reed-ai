@@ -145,6 +145,7 @@ class MeetingBot:
                 ignore_default_args=["--mute-audio"],
             )
             context = await self._browser.new_context(
+                storage_state=self._auth_state_path(),
                 # No mic/camera permission: the bot is a listener. Granting mic
                 # (with fake-ui/fake-device flags) is how the fake test signal
                 # ended up in recordings; denied permission just means the
@@ -223,6 +224,23 @@ class MeetingBot:
                     await self._browser.close()
                 except Exception:
                     pass  # browser already gone - nothing left to close
+
+    @staticmethod
+    def _auth_state_path() -> str | None:
+        """Saved sign-in for the bot's own account, if one has been provided."""
+        import tempfile
+        from pathlib import Path
+
+        if settings.bot_storage_state_json.strip():
+            tmp = Path(tempfile.gettempdir()) / "reed-bot-auth.json"
+            tmp.write_text(settings.bot_storage_state_json, encoding="utf-8")
+            log.info("bot signing in with the account in BOT_STORAGE_STATE_JSON")
+            return str(tmp)
+        path = Path(settings.bot_storage_state)
+        if path.is_file():
+            log.info("bot signing in with the saved account at %s", path)
+            return str(path)
+        return None
 
     async def _dump_diagnostics(self, page: Page, label: str) -> str | None:
         """Screenshot + visible text of wherever the bot got stuck.
