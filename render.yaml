@@ -1,4 +1,4 @@
-# Render blueprint for Notely.
+# Render blueprint for KPMG Notely.
 #
 # One Docker web service serves both the API and the built frontend
 # (same origin, so no CORS or frontend URL config is needed).
@@ -51,7 +51,7 @@ services:
 
       # --- Bot (won't run on the free plan - needs a paid instance) ---
       - key: BOT_DISPLAY_NAME
-        value: Notely
+        value: KPMG Notely
       - key: BOT_HEADLESS
         value: "true" # must stay true on a server (no display)
       - key: BOT_MAX_MEETING_MINUTES

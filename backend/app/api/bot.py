@@ -28,21 +28,24 @@ def _ingest_url(request: Request, meeting_id: int) -> str:
     return f"ws://127.0.0.1:{port}/ws/ingest/{meeting_id}"
 
 
-@router.post("/join", status_code=202)
-async def join_meeting(
-    payload: JoinRequest, request: Request, session: Session = Depends(get_session)
-):
-    try:
-        platform = detect_platform(payload.meeting_url)
-    except ValueError as exc:
-        raise HTTPException(400, str(exc)) from exc
-
+def launch_bot(
+    session: Session,
+    meeting_url: str,
+    ingest_url_for,
+    *,
+    title: str | None = None,
+    language: str = "en",
+    display_name: str | None = None,
+) -> Meeting:
+    """Create the meeting row and start a bot for it (shared by the API and the
+    calendar auto-joiner). ``ingest_url_for(meeting_id)`` builds the socket URL."""
+    platform = detect_platform(meeting_url)
     meeting = Meeting(
-        title=payload.title or "Live meeting",
-        meeting_url=payload.meeting_url,
+        title=title or "Live meeting",
+        meeting_url=meeting_url,
         platform=platform,
         status=MeetingStatus.joining,
-        language=payload.language,
+        language=language,
     )
     session.add(meeting)
     session.commit()
@@ -50,18 +53,32 @@ async def join_meeting(
 
     # Created up front so the ingest socket has somewhere to deliver audio the
     # instant capture starts, before the bot task gets scheduled.
-    registry.get_or_create_session(meeting.id, payload.language)
+    registry.get_or_create_session(meeting.id, language)
 
-    supervisor = BotSupervisor(
-        meeting.id,
-        payload.meeting_url,
-        _ingest_url(request, meeting.id),
-        payload.display_name,
-    )
+    supervisor = BotSupervisor(meeting.id, meeting_url, ingest_url_for(meeting.id), display_name)
     registry.bots[meeting.id] = supervisor
     supervisor.start()
+    return meeting
 
-    return {"meeting_id": meeting.id, "platform": platform, "status": "joining"}
+
+@router.post("/join", status_code=202)
+async def join_meeting(
+    payload: JoinRequest, request: Request, session: Session = Depends(get_session)
+):
+    try:
+        detect_platform(payload.meeting_url)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+    meeting = launch_bot(
+        session,
+        payload.meeting_url,
+        lambda mid: _ingest_url(request, mid),
+        title=payload.title,
+        language=payload.language,
+        display_name=payload.display_name,
+    )
+    return {"meeting_id": meeting.id, "platform": meeting.platform, "status": "joining"}
 
 
 @router.post("/{meeting_id}/leave")

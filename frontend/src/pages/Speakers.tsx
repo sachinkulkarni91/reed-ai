@@ -35,7 +35,7 @@ export default function Speakers() {
   return (
     <Page
       title="Speakers"
-      subtitle="Voices Notely recognises automatically — no screenshots or introductions needed."
+      subtitle="Voices KPMG Notely recognises automatically — no screenshots or introductions needed."
     >
       {error && (
         <div className="mb-5 rounded-lg border border-red-900/60 bg-red-950/40 px-4 py-3 text-sm text-red-300">
@@ -47,7 +47,7 @@ export default function Speakers() {
         <h2 className="mb-2 text-sm font-semibold text-white">How voices get learned</h2>
         <p className="text-sm leading-relaxed text-slate-400">
           Whenever a speaker in a meeting gets a real name — from the participant list on screen, from
-          the conversation itself, or from you tagging them in the transcript — Notely saves a compact
+          the conversation itself, or from you tagging them in the transcript — KPMG Notely saves a compact
           voice fingerprint under that name. In every future meeting, each voice is checked against this
           registry first, so known people are named instantly. Fingerprints improve with every meeting a
           person is tagged in: 2–3 tagged meetings per person makes recognition very reliable.

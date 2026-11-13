@@ -22,12 +22,18 @@ logging.basicConfig(
 async def lifespan(app: FastAPI):
     init_db()
     logging.getLogger(__name__).info(
-        "Notely up - model=%s transcription=%s trello=%s",
+        "KPMG Notely up - model=%s transcription=%s trello=%s",
         settings.reed_model,
         settings.transcription_provider,
         "on" if settings.trello_api_key else "off",
     )
+    import asyncio
+
+    from .services import calendar_join
+
+    calendar_task = asyncio.create_task(calendar_join.run_forever())
     yield
+    calendar_task.cancel()
     # Leave any call we are still in, so the browser process does not outlive us.
     from .bot.manager import registry
 
@@ -42,7 +48,7 @@ async def lifespan(app: FastAPI):
             )
 
 
-app = FastAPI(title="Notely", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="KPMG Notely", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

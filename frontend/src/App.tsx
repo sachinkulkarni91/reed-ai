@@ -20,10 +20,10 @@ export default function App() {
       <aside className="hidden w-60 shrink-0 border-r border-ink-800 bg-ink-900/50 p-5 md:block">
         <div className="mb-8 flex items-center gap-2">
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-reed-600 font-bold text-white">
-            R
+            N
           </div>
           <div>
-            <div className="text-sm font-semibold text-white">Notely</div>
+            <div className="text-sm font-semibold text-white">KPMG Notely</div>
             <div className="text-[11px] text-slate-500">Meeting intelligence</div>
           </div>
         </div>

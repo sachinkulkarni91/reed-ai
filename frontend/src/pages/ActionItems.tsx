@@ -64,7 +64,7 @@ export default function ActionItems() {
   return (
     <Page
       title="Action items"
-      subtitle="Every commitment Notely heard, across all meetings."
+      subtitle="Every commitment KPMG Notely heard, across all meetings."
       actions={
         <button className="btn-primary" disabled={busy || outstanding === 0} onClick={pushAll}>
           {busy ? "Pushing…" : `Push all ${outstanding} to Trello`}

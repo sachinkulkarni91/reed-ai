@@ -352,7 +352,7 @@ function Transcript({
   const uniqueSpeakers = [...new Set(all.map((s) => s.speaker))];
   const tagSpeaker = (speaker: string) => {
     const name = prompt(
-      `Who is "${speaker}"? Their real name is applied everywhere in this meeting and their voice is saved so Notely recognises them automatically in future meetings.`,
+      `Who is "${speaker}"? Their real name is applied everywhere in this meeting and their voice is saved so KPMG Notely recognises them automatically in future meetings.`,
       speaker.startsWith("Speaker ") ? "" : speaker
     );
     if (name && name.trim() && name.trim() !== speaker)

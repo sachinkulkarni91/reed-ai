@@ -31,13 +31,21 @@ class Settings(BaseSettings):
     trello_auto_push: bool = False
 
     # Bot
-    bot_display_name: str = "Notely"
+    bot_display_name: str = "KPMG Notely"
     bot_headless: bool = True
     # Signed-in bot identity: a Playwright storage-state file (cookies) made by
     # scripts/bot_login.py, or its JSON pasted into BOT_STORAGE_STATE_JSON on a
     # host with no disk access. Unset = join as an anonymous guest.
     bot_storage_state: str = "data/bot-auth.json"
     bot_storage_state_json: str = ""
+    # Auto-join: watch the bot account's calendar (Microsoft Graph) and join
+    # Teams invites when they start. Needs an Entra app registration (client id)
+    # and a one-time sign-in via scripts/calendar_login.py.
+    auto_join_enabled: bool = False
+    ms_client_id: str = ""
+    calendar_poll_seconds: int = 60
+    calendar_token_file: str = "data/graph-token.json"
+    server_port: int = 8010  # where this app listens; the bot's ingest socket points here
     bot_max_meeting_minutes: int = 180
 
     # Server
