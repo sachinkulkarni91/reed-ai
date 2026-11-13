@@ -106,6 +106,9 @@ class MeetingBot:
         self._browser: Browser | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
         self._name_samples: list[dict] = []
+        self._captions_on = False
+        self._last_caption: tuple[str, str] | None = None
+        self._caption_lines = 0
         self._frame_count = 0
 
     def request_stop(self) -> None:
@@ -199,6 +202,8 @@ class MeetingBot:
                 except Exception as exc:
                     return BotResult(False, f"Could not reach the ingest socket: {exc}")
 
+                if self.platform == Platform.teams:
+                    await self._enable_captions(page)
                 await self._watch(page, ingest_ws)
                 return BotResult(True, "Meeting ended")
             except TargetClosedError:
@@ -300,6 +305,8 @@ class MeetingBot:
                 # samples; 15s snapshots so short turns land inside a frame.
                 if tick % 2 == 0:
                     await self._sample_active_speaker(page, elapsed)
+                if self._captions_on:
+                    await self._sample_captions(page, elapsed)
                 if tick % 15 == 0 and self._frame_count < 80:
                     await self._snapshot(page, elapsed)
                 tick += 1
@@ -344,6 +351,77 @@ class MeetingBot:
         name = str(raw).split(",")[0].strip()
         if name and len(name) < 60:
             self._name_samples.append({"t": round(elapsed, 1), "name": name})
+
+    # -- Teams live captions: authoritative "who is speaking" ---------------- #
+    CAPTION_NEWEST_JS = """
+    () => {
+      const texts = [...document.querySelectorAll(
+        '[data-tid="closed-caption-text"], [data-tid*="caption-text" i]')];
+      if (!texts.length) return null;
+      const el = texts[texts.length - 1];
+      let node = el, author = null;
+      for (let i = 0; i < 6 && node && !author; i++) {
+        node = node.parentElement;
+        const a = node && node.querySelector('[data-tid="author"], [data-tid*="caption-author" i]');
+        if (a) author = (a.innerText || '').trim();
+      }
+      return author ? {author, text: (el.innerText || '').trim().slice(-60)} : null;
+    }
+    """
+
+    async def _enable_captions(self, page: Page) -> None:
+        """Best-effort: turn on Teams live captions so every line carries the
+        speaker's real display name. Never fatal - without captions the bot
+        simply falls back to active-speaker/vision naming."""
+        try:
+            await page.keyboard.press("Control+Shift+U")  # Teams' captions shortcut
+            await page.wait_for_timeout(1500)
+            if await page.evaluate(self.CAPTION_NEWEST_JS) is not None or await self._captions_region(page):
+                self._captions_on = True
+                log.info("teams live captions on (shortcut)")
+                return
+            # Menu route: More -> Language and speech -> Turn on live captions.
+            for sel in ('[data-tid="callingButtons-showMoreBtn"]', '#callingButtons-showMoreBtn',
+                        'button[aria-label^="More" i]'):
+                try:
+                    await page.locator(sel).first.click(timeout=3_000)
+                    break
+                except Exception:
+                    continue
+            await page.wait_for_timeout(700)
+            await self._click_text(page, "language and speech")
+            await page.wait_for_timeout(700)
+            clicked = await self._click_text(page, "turn on live captions")
+            await page.wait_for_timeout(1500)
+            # A spoken-language prompt sometimes follows; accept the default.
+            await self._click_text(page, "confirm")
+            self._captions_on = bool(clicked) or await self._captions_region(page)
+            log.info("teams live captions %s (menu)", "on" if self._captions_on else "unavailable")
+        except Exception as exc:
+            log.warning("could not enable teams captions: %s", exc)
+
+    @staticmethod
+    async def _captions_region(page: Page) -> bool:
+        try:
+            return bool(await page.evaluate(
+                "() => !!document.querySelector('[data-tid*=\"closed-caption\" i]')"))
+        except Exception:
+            return False
+
+    async def _sample_captions(self, page: Page, elapsed: float) -> None:
+        try:
+            newest = await page.evaluate(self.CAPTION_NEWEST_JS)
+        except Exception:
+            return
+        if not newest:
+            return
+        key = (newest["author"], newest["text"])
+        if key == self._last_caption:
+            return
+        self._last_caption = key
+        # The caption trails the voice by a second or two.
+        self._name_samples.append({"t": round(max(0.0, elapsed - 1.5), 1), "name": newest["author"]})
+        self._caption_lines += 1
 
     async def _snapshot(self, page: Page, elapsed: float) -> None:
         if self.meeting_id is None:

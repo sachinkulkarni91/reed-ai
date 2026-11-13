@@ -18,6 +18,7 @@ import asyncio
 import base64
 import io
 import logging
+import re
 from typing import Optional
 
 import anthropic
@@ -118,7 +119,9 @@ def _clean_name(raw: str | None) -> str | None:
     """
     if not raw:
         return None
-    parts = [p.strip() for p in str(raw).split(",")]
+    # '(Contractor)' / '(Guest)' style tags are not part of the name.
+    raw = re.sub(r"\s*\([^)]*\)", "", str(raw)).strip()
+    parts = [p.strip() for p in raw.split(",")]
     kept = [
         p for p in parts
         if p and not any(tok in p.lower() for tok in _STATUS_TOKENS)
