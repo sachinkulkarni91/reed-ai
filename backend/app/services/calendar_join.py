@@ -85,15 +85,18 @@ def _save_token(body: dict) -> None:
 
 
 def _load_refresh_token() -> str | None:
-    env = os.environ.get("GRAPH_REFRESH_TOKEN")
-    if env:
-        return env
     path = _token_path()
     if path.is_file():
         try:
             return json.loads(path.read_text(encoding="utf-8")).get("refresh_token")
         except Exception:
             return None
+    # First start on a host with no interactive login (Render): seed the disk
+    # from GRAPH_REFRESH_TOKEN, after which the rotating token lives on disk.
+    env = os.environ.get("GRAPH_REFRESH_TOKEN")
+    if env:
+        _save_token({"refresh_token": env.strip()})
+        return env.strip()
     return None
 
 
@@ -114,7 +117,7 @@ async def _access_token(client: httpx.AsyncClient) -> str | None:
         log.warning("calendar token refresh failed: %s", r.text[:200])
         return None
     body = r.json()
-    if body.get("refresh_token") and not os.environ.get("GRAPH_REFRESH_TOKEN"):
+    if body.get("refresh_token"):
         _save_token(body)  # refresh tokens rotate
     return body["access_token"]
 

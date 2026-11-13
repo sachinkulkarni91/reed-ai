@@ -57,6 +57,18 @@ services:
       - key: BOT_MAX_MEETING_MINUTES
         value: "180"
 
+      # --- Bot sign-in + calendar auto-join (values pasted in the dashboard) ---
+      - key: BOT_STORAGE_STATE_JSON
+        sync: false # cookies-only session from scripts/bot_login.py
+      - key: AUTO_JOIN_ENABLED
+        value: "true"
+      - key: MS_CLIENT_ID
+        sync: false
+      - key: GRAPH_REFRESH_TOKEN
+        sync: false # first-start seed; afterwards the token lives on the disk
+      - key: CALENDAR_TOKEN_FILE
+        value: /app/data/graph-token.json
+
       # --- Trello (off; fill the three keys to enable) ---
       - key: TRELLO_AUTO_PUSH
         value: "false"
